@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springboard.board.commons.constants.Role;
 
 @Entity
 @Data
@@ -35,4 +36,8 @@ public class Member extends BaseEntity {
 
 	@Lob
 	private String termsAgree;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length=10, nullable = false)
+	private Role roles = Role.USER;
 }

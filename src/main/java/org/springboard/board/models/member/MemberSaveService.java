@@ -2,6 +2,7 @@ package org.springboard.board.models.member;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springboard.board.commons.constants.Role;
 import org.springboard.board.controllers.members.JoinForm;
 import org.springboard.board.entities.Member;
 import org.springboard.board.repositories.MemberRepository;
@@ -17,6 +18,8 @@ public class MemberSaveService {
 
 	public void save(JoinForm joinForm){
 		Member member = new ModelMapper().map(joinForm, Member.class);
+		member.setRoles(Role.USER);
+
 		member.setUserPw(passwordEncoder.encode(joinForm.getUserPw()));
 
 		memberRepository.saveAndFlush(member);
