@@ -55,11 +55,14 @@ public class JoinValidator implements Validator, MobileValidator, PasswordValida
 		//4. 휴대전화번호(선택) - 입력된 경우 형식 체크
 
 		//5. 휴대전화번호가 입력된 경우 숫자만 추출해서 다시 커맨드 객체에 저장
-		if(mobile != null && !mobile.isBlank()){
-			errors.rejectValue("mobile", "Validation.mobile");
+		if (mobile != null && !mobile.isBlank()) {
+			if (!mobileNumCheck(mobile)) {
+				errors.rejectValue("mobile", "Validation.mobile");
+			}
+
+			mobile = mobile.replaceAll("\\D", "");
+			joinForm.setMobile(mobile);
 		}
-		mobile = mobile.replaceAll("\\D", "");
-		joinForm.setMobile(mobile);
 
 
 		//6. 필수 약관 동의 체크
