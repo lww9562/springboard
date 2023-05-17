@@ -14,6 +14,17 @@
 * 스프링 시큐리티 설정
     - 로그인 양식
     - UserDetails, UserDetailsService 인터페이스 구현 클래스
+    - Spring Data JPA + Spring Security : 수정자(AwareAuditor 인터페이스 구현체)
+    - Spring Security의 회원 정보 조회 방법
+      - 요청 처리 메서드에 주입
+        - Principal principal - String getUsername() : 아이디
+        - @AuthenticationPrincipal UserDetails 구현 클래스의 객체
+      
+      - 직접 회원정보 가져오기
+        - SecurityContextHolder
+          - getContext.getAuthentication()
+          - getPrincipal() : 비회원 (String) - anonymousUser / 회원 - UserDetails 구현 객체
+           
 
 
 * 기본 에러 응답 코드 처리
@@ -27,6 +38,5 @@
       - path : 오류의 유입 URL
 
   
-* 관리자 페이지
-    - 기본설정
-    - 게시판 설정
+* 공통 오류 페이지
+    - @ExceptionHandler, @ControllerAdvice, @RestControllerAdvice
