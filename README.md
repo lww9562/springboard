@@ -28,7 +28,7 @@
 
 
 * 기본 에러 응답 코드 처리
-    - 템플릿 경로 /error/응답코드.html
+    - 템플릿 경로 : /error/응답코드.html
       - timestamp : 오류 발생 시각
       - status : HTTP 상태 코드
       - error : 오류 발생 원인
@@ -40,3 +40,10 @@
   
 * 공통 오류 페이지
     - @ExceptionHandler, @ControllerAdvice, @RestControllerAdvice
+
+
+## 4일차
+* 공통 오류 페이지 처리
+* 관리자 페이지
+    - 사이트 설정
+    - 게시판 설정
