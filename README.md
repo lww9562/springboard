@@ -44,6 +44,11 @@
 
 ## 4일차
 * 공통 오류 페이지 처리
+    - 일반 컨트롤러(@ControllerAdvice)
+    - REST 컨트롤러(@RestControllerAdvice)
+      - 일반 요청 응답과 오류를 통일성 있게 처리(JSONData)
+      
+
 * 관리자 페이지
     - 사이트 설정
     - 게시판 설정
