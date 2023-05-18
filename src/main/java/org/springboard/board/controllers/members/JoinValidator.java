@@ -68,7 +68,7 @@ public class JoinValidator implements Validator, MobileValidator, PasswordValida
 		//6. 필수 약관 동의 체크
 		if(agrees != null && agrees.length > 0) {
 			for(boolean agree : agrees) {
-				if(!agree){
+				if(!agree || Boolean.valueOf(agree)==null){
 					errors.reject("Validation.joinForm.agree");
 					break;
 				}
