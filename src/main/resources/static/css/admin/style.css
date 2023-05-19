@@ -213,6 +213,12 @@ h1 {
 	line-height: 1;
 	padding: 0;
 }
+h2 {
+	font-size: 18px;
+	font-weight: bold;
+	margin: 35px 0 10px;
+	line-height: 1;
+}
 
 /** 기본 테이블 스타일 */
 .table-cols {
@@ -236,3 +242,23 @@ h1 {
 .table-cols td {
 	border-bottom: 1px solid #d5d5d5;
 }
+
+
+/** 공통 서브 메뉴 */
+nav.submenus{
+	background: #fff;
+	box-shadow: 1px 1px 5px #cdced5;
+	margin-bottom: 30px;
+	display: flex;
+	height: 60px;
+}
+nav.submenus a.on {
+	background: #596b99;
+	color: #fff;
+}
+nav.submenus a {
+	line-height: 60px;
+	padding: 0 40px;
+	font-size: 18px;
+}
+
