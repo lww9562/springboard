@@ -6,6 +6,7 @@ import org.springboard.board.commons.CommonException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @ControllerAdvice("org.springboard.board.controllers")
 public class CommonController {

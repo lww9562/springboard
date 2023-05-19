@@ -42,5 +42,11 @@ public class MemberController {
 		return "member/login";
 	}
 
+	@GetMapping("/test")
+	public String test() {
+
+		return "main/test";
+
+	}
 
 }
