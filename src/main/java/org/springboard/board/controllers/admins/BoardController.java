@@ -9,7 +9,9 @@ import org.springboard.board.commons.MenuDetail;
 import org.springboard.board.commons.Menus;
 import org.springboard.board.entities.Board;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
+import org.springboard.board.models.board.config.BoardConfigListService;
 import org.springboard.board.models.board.config.BoardConfigSaveService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -24,11 +26,15 @@ public class BoardController {
 	private final HttpServletRequest request;
 	private final BoardConfigSaveService configSaveService;
 	private final BoardConfigInfoService configInfoService;
+	private final BoardConfigListService configListService;
 
 	// 게시판 목록
 	@GetMapping
-	public String index(Model model){
+	public String index(@ModelAttribute BoardSearch boardSearch, Model model){
 		commonProcess(model, "게시판 목록");
+
+		Page<Board> data = configListService.gets(boardSearch);
+		model.addAttribute("items", data.getContent());
 
 		return "admin/board/index";
 	}
@@ -46,6 +52,7 @@ public class BoardController {
 		commonProcess(model, "게시판 수정");
 
 		Board board = configInfoService.get(bId, true);
+
 		BoardForm boardForm = new ModelMapper().map(board, BoardForm.class);
 		boardForm.setMode("update");
 		boardForm.setListAccessRole(board.getListAccessRole().toString());
