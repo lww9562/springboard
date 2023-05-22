@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springboard.board.commons.constants.Role;
 
+import java.util.Arrays;
+
 @Entity @Data @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class Board extends BaseMemberEntity{
@@ -46,7 +48,7 @@ public class Board extends BaseMemberEntity{
 
 	@Enumerated(EnumType.STRING)
 	@Column(length=10, nullable = false)
-	private Role replyccessRole = Role.ALL;			// 답글 접근 권한
+	private Role replyAccessRole = Role.ALL;			// 답글 접근 권한
 
 	@Enumerated(EnumType.STRING)
 	@Column(length=10, nullable = false)
@@ -67,4 +69,18 @@ public class Board extends BaseMemberEntity{
 	@Column(length=20, nullable = false)
 	private String skin = "default";				// 게시판 스킨
 	/** 기능 설정 E */
+
+
+	/**
+	 * 게시판 분류 목록
+	 *
+ 	 * @return
+	 */
+	public String[] getCategories() {
+		if(category == null) {
+			return null;
+		}
+		String[] categories  = category.replaceAll("``r", "").trim().split("\\n");
+		return categories;
+	}
 }

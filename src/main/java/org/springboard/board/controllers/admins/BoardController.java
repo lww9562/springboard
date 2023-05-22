@@ -1,9 +1,15 @@
 package org.springboard.board.controllers.admins;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springboard.board.commons.CommonException;
 import org.springboard.board.commons.MenuDetail;
 import org.springboard.board.commons.Menus;
+import org.springboard.board.entities.Board;
+import org.springboard.board.models.board.config.BoardConfigInfoService;
+import org.springboard.board.models.board.config.BoardConfigSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -16,6 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardController {
 	private final HttpServletRequest request;
+	private final BoardConfigSaveService configSaveService;
+	private final BoardConfigInfoService configInfoService;
 
 	// 게시판 목록
 	@GetMapping
@@ -37,17 +45,37 @@ public class BoardController {
 	public String update(@PathVariable String bId, Model model){
 		commonProcess(model, "게시판 수정");
 
+		Board board = configInfoService.get(bId, true);
+		BoardForm boardForm = new ModelMapper().map(board, BoardForm.class);
+		boardForm.setMode("update");
+		boardForm.setListAccessRole(board.getListAccessRole().toString());
+		boardForm.setViewAccessRole(board.getViewAccessRole().toString());
+		boardForm.setWriteAccessRole(board.getWriteAccessRole().toString());
+		boardForm.setReplyAccessRole(board.getReplyAccessRole().toString());
+		boardForm.setCommentAccessRole(board.getCommentAccessRole().toString());
+
+		model.addAttribute("boardForm", boardForm);
+
 		return "admin/board/config";
 	}
 
 	@PostMapping("/save")
-	public String save(BoardForm boardForm, Errors errors, Model model) {
+	public String save(@Valid BoardForm boardForm, Errors errors, Model model) {
 		String mode = boardForm.getMode();
 		commonProcess(model, mode != null && mode.equals("update") ? "게시판 수정" : "게시판 등록");
 
-		
+		try {
+			configSaveService.save(boardForm, errors);
+		} catch (CommonException e) {
+			errors.reject("BoardConfigError", e.getMessage());
+		}
 
-		return "redirect:/admin/board";	// 게시판 목록으로 이동
+		if (errors.hasErrors()) {
+			return "admin/board/config";
+		}
+
+
+		return "redirect:/admin/board"; // 게시판 목록
 	}
 
 	private void commonProcess(Model model, String title) {

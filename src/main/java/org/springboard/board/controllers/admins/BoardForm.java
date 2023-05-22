@@ -31,7 +31,7 @@ public class BoardForm {
 	private String listAccessRole = "ALL";			// 목록 접근 권한
 	private String viewAccessRole = "ALL";			// 글보기 접근 권한
 	private String writeAccessRole = "ALL";			// 글쓰기 접근 권한
-	private String replyccessRole = "ALL";			// 답글 접근 권한
+	private String replyAccessRole = "ALL";			// 답글 접근 권한
 	private String commentAccessRole = "ALL";		// 댓글 접근 권한
 	/** 접근 권한 설정 E */
 
