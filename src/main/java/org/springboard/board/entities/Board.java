@@ -80,7 +80,7 @@ public class Board extends BaseMemberEntity{
 		if(category == null) {
 			return null;
 		}
-		String[] categories  = category.replaceAll("``r", "").trim().split("\\n");
+		String[] categories  = category.replaceAll("\\r", "").trim().split("\\n");
 		return categories;
 	}
 }
