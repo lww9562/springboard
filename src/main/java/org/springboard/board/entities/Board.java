@@ -66,6 +66,9 @@ public class Board extends BaseMemberEntity{
 	private boolean useReply;						// 답글 사용 여부
 	private boolean useComment;						// 댓글 사용 여부
 
+	@Transient
+	private boolean isGuest;						// 비회원 작성, 수정 모드 여부 체크
+	
 	@Column(length=20, nullable = false)
 	private String skin = "default";				// 게시판 스킨
 	/** 기능 설정 E */
