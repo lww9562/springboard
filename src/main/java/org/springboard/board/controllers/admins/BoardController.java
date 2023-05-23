@@ -87,6 +87,7 @@ public class BoardController {
 	private void commonProcess(Model model, String title) {
 		// 서브 메뉴 처리
 		String subMenuCode = Menus.getSubMenuCode(request);
+		subMenuCode = title.equals("게시판 수정") ? "register" : subMenuCode;
 		model.addAttribute("subMenuCode", subMenuCode);
 
 		List<MenuDetail> submenus = Menus.gets("board");

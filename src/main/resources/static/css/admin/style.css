@@ -285,6 +285,33 @@ h2 {
 	border-bottom: 1px solid #d5d5d5;
 }
 
+.table-rows {
+	width: 100%;
+	border-spacing: 0;
+	padding: 0;
+}
+.table-rows th {
+	background: #7a7c89;
+	color: #fff;
+	border-top: 1px solid #d5d5d5;
+	padding: 12px 10px;
+}
+.table-rows td {
+	padding: 15px 10px;
+}
+.table-rows th, .table-rows td {
+	border-bottom: 1px solid #d5d5d5;
+	border-right: 1px solid #d5d5d5;
+}
+.table-rows th:first-of-type, .table-rows td:first-of-type {
+	border-left: 1px solid #d5d5d5;
+}
+
+.table-action {
+	padding: 10px 0;
+	border-bottom: 1px solid #d5d5d5;
+}
+
 
 /** 공통 서브 메뉴 */
 nav.submenus{
