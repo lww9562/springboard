@@ -81,7 +81,6 @@ public class BoardController {
 			return "admin/board/config";
 		}
 
-
 		return "redirect:/admin/board"; // 게시판 목록
 	}
 

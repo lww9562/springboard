@@ -6,8 +6,8 @@
 		<meta name="_csrf_header" th:content="${_csrf.headerName}">
 		<meta name="description" th:content="${siteConfig.siteDescription}">
 		<title>
-			<th:block th:if="${pageTitle != null}" th:text="${pageTitle + ' ::'}"></th:block>
 			<th:block th:text="${siteConfig.siteTitle}"></th:block>
+			<th:block th:if="${pageTitle != null}" th:text="${' :: ' + pageTitle}"></th:block>
 		</title>
 		<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/xeicon@2.3.3/xeicon.min.css">
 		<link rel="stylesheet" type="text/css" th:href="@{/css/admin/style.css?v={v}(v=${siteConfig.cssJsVersion})}">

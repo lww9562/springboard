@@ -45,14 +45,11 @@ public class BoardConfigSaveService {
 		board.setRowsOfPage(boardForm.getRowsOfPage());
 		board.setShowViewList(boardForm.isShowViewList());
 		board.setCategory(boardForm.getCategory());
+
 		board.setListAccessRole(Role.valueOf(boardForm.getListAccessRole()));
-
 		board.setViewAccessRole(Role.valueOf(boardForm.getViewAccessRole()));
-
 		board.setWriteAccessRole(Role.valueOf(boardForm.getWriteAccessRole()));
-
 		board.setReplyAccessRole(Role.valueOf(boardForm.getReplyAccessRole()));
-
 		board.setCommentAccessRole(Role.valueOf(boardForm.getCommentAccessRole()));
 
 		board.setUseEditor(boardForm.isUseEditor());
