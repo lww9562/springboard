@@ -1,13 +1,18 @@
 package org.springboard.board.tests;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springboard.board.commons.configs.ConfigInfoService;
+import org.springboard.board.commons.configs.ConfigSaveService;
+import org.springboard.board.controllers.admins.ConfigForm;
 import org.springboard.board.controllers.boards.BoardForm;
 import org.springboard.board.controllers.members.JoinForm;
 import org.springboard.board.entities.Board;
+import org.springboard.board.entities.Configs;
 import org.springboard.board.entities.Member;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
 import org.springboard.board.models.board.config.BoardConfigSaveService;
@@ -20,7 +25,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*;
+
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,24 +48,31 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BoardSaveTests {
 	@Autowired
 	private BoardDataSaveService saveService;
-
 	@Autowired
 	private BoardConfigSaveService configSaveService;
-
 	@Autowired
 	private BoardConfigInfoService configInfoService;
-
 	@Autowired
 	private MemberSaveService memberSaveService;
 
+	@Autowired
+	private ConfigSaveService siteConfigSaveService;
+	@Autowired
+	private ConfigInfoService siteConfigInfoService;
 	private Board board;
-
 	private JoinForm joinForm;
+
+	@Autowired
+	private MockMvc mockMvc;
 
 
 	@BeforeEach
 	@Transactional
 	void init() {
+		// 사이트 설정 등록
+
+
+
 		// 게시판 설정 추가
 		org.springboard.board.controllers.admins.BoardForm boardForm = new org.springboard.board.controllers.admins.BoardForm();
 		boardForm.setBId("freetalk");
@@ -216,5 +237,19 @@ public class BoardSaveTests {
 
 	}
 
+	@Test
+	@DisplayName("통합테스트 - 비회원 게시글 작성 유효성 검사")
+	void requiredFieldsGuestControllerTest() throws Exception {
+		siteConfigSaveService.save("siteConfig", new ConfigForm());
+		System.out.println("===========================================");
+		System.out.println(siteConfigInfoService.get("siteConfig", new TypeReference<Map<String, String>>() { }));
 
+		BoardForm boardForm = getGuestBoardForm();
+		mockMvc.perform(post("/board/save")
+				.param("bId", boardForm.getBId())
+				.param("gid", boardForm.getGid())
+						.with(csrf().asHeader()))
+				.andDo(print());
+
+	}
 }
