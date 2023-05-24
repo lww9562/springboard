@@ -2,6 +2,7 @@ package org.springboard.board.tests;
 
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springboard.board.controllers.boards.BoardForm;
@@ -12,11 +13,15 @@ import org.springboard.board.models.board.config.BoardConfigInfoService;
 import org.springboard.board.models.board.config.BoardConfigSaveService;
 import org.springboard.board.models.member.MemberSaveService;
 import org.springboard.board.tests.models.board.BoardDataSaveService;
+import org.springboard.board.tests.models.board.BoardValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-test.properties")
 @DisplayName("게시글 등록, 수정 테스트")
+@Transactional
+
 public class BoardSaveTests {
 	@Autowired
 	private BoardDataSaveService saveService;
@@ -69,20 +76,17 @@ public class BoardSaveTests {
 	}
 
 	private BoardForm getGuestBoardForm() {
-		return BoardForm.builder()
-				.bId(board.getBId())
-				.guestPw("12345678")
-				.poster("비회원")
-				.subject("제목!")
-				.content("내용!")
-				.category(board.getCategories() == null ? null : board.getCategories()[0])
-				.build();
+		BoardForm boardForm = getCommonBoardForm();
+
+		boardForm.setGuestPw("12345678");
+
+		return boardForm;
 	}
 
-	//@WithMockUser(username="user01", password="aA!123456")
-	private BoardForm getMemberBoardForm() {
+	private BoardForm getCommonBoardForm() {
 		return BoardForm.builder()
 				.bId(board.getBId())
+				.gid(UUID.randomUUID().toString())
 				.poster(joinForm.getUserNm())
 				.subject("제목!")
 				.content("내용!")
@@ -93,9 +97,124 @@ public class BoardSaveTests {
 
 	@Test
 	@DisplayName("게시글 등록(비회원) 성공 시 예외 없음")
+	@WithAnonymousUser
 	void registerGuestSuccessTest() {
 		assertDoesNotThrow(() -> {
 			saveService.save(getGuestBoardForm());
 		});
 	}
+
+	@Test
+	@DisplayName("게시글 등록(회원) 성공 시 예외 없음")
+	@WithMockUser(username="user01", password="aA!123456")
+	@Disabled
+	void registerMemberSuccessTest() {
+		assertDoesNotThrow(() -> {
+			saveService.save(getCommonBoardForm());
+		});
+	}
+
+	// 공통(회원, 비회원) 유효성 검사 체크
+	private void commonRequiredFieldsTest() {
+		assertAll(
+				// bId - null
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setBId(null);
+					saveService.save(boardForm);
+				}),
+				// bId - 공백
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setBId("    ");
+					saveService.save(boardForm);
+				}),
+				// gid - null
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setGid(null);
+					saveService.save(boardForm);
+				}),
+				// gid - 공백
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setGid("    ");
+					saveService.save(boardForm);
+				}),
+				// poster - null
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setPoster(null);
+					saveService.save(boardForm);
+				}),
+				// poster - 공백
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setPoster("      ");
+					saveService.save(boardForm);
+				}),
+				// subject - null
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setSubject(null);
+					saveService.save(boardForm);
+				}),
+				// subject - 공백
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setSubject("       ");
+					saveService.save(boardForm);
+				}),
+				// content - null
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setContent(null);
+					saveService.save(boardForm);
+				}),
+				// content - 공백
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getCommonBoardForm();
+					boardForm.setContent("     ");
+					saveService.save(boardForm);
+				})
+
+		);
+	}
+
+
+	@Test
+	@DisplayName("필수 항목 검증(비회원) - bId, gid, poster, subject, content, guestPw(자리수는 6자리 이상), BoardValidationException이 발생")
+	@WithAnonymousUser
+	void requiredFieldsGuestTest() {
+		commonRequiredFieldsTest();
+
+		assertAll(
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getGuestBoardForm();
+					boardForm.setGuestPw(null);
+					saveService.save(boardForm);
+				}),
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getGuestBoardForm();
+					boardForm.setGuestPw("   ");
+					saveService.save(boardForm);
+				}),
+				() -> assertThrows(BoardValidationException.class, () -> {
+					BoardForm boardForm = getGuestBoardForm();
+					boardForm.setGuestPw("1234");
+					saveService.save(boardForm);
+				})
+		);
+	}
+
+	@Test
+	@DisplayName("필수 항목 검증(회원) - bId, gid, poster, subject, content, BoardValidationException 발생")
+	@WithMockUser(username="user01", password="aA!123456")
+	void requiredFieldsMemberTest() {
+		commonRequiredFieldsTest();
+
+
+	}
+
+
 }

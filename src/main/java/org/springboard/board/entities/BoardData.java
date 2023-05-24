@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity @Data @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class BoardData extends BaseEntity {
@@ -14,9 +16,9 @@ public class BoardData extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="bId")
-	private Board bId;			// 게시판 ID
+	private Board board;			// 게시판 ID
 
-	private String gid;			// 파일 업로드 때 사용
+	private String gid = UUID.randomUUID().toString();			// 파일 업로드 때 사용
 
 	private String poster;		// 작성자
 	private String guestPw;		// 비회원 비밀번호
