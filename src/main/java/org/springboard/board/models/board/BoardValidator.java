@@ -1,4 +1,4 @@
-package org.springboard.board.tests.models.board;
+package org.springboard.board.models.board;
 
 import org.springboard.board.commons.MemberUtil;
 import org.springboard.board.commons.validators.LengthValidator;
@@ -26,7 +26,7 @@ public class BoardValidator implements Validator<BoardForm>, RequiredValidator, 
 		if (!memberUtil.isLogin()) {
 			requiredCheck(boardForm.getGuestPw(), new BoardValidationException("NotBlank.boardForm.guestPw"));
 
-			strLengthCheck(boardForm.getGuestPw(), 6, new BoardValidationException("Size.boardForm.gusetPw"));
+			strLengthCheck(boardForm.getGuestPw(), 6, new BoardValidationException("Size.boardForm.guestPw"));
 		}
 
 

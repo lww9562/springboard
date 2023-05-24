@@ -1,4 +1,4 @@
-package org.springboard.board.tests.models.board;
+package org.springboard.board.models.board;
 
 import org.springboard.board.commons.CommonException;
 import org.springframework.http.HttpStatus;

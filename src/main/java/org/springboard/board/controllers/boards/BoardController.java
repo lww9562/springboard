@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springboard.board.commons.CommonException;
+import org.springboard.board.commons.MemberUtil;
 import org.springboard.board.entities.Board;
+import org.springboard.board.models.board.BoardDataSaveService;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -20,6 +22,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardController {
 	private final BoardConfigInfoService configInfoService;
+	private final BoardDataSaveService saveService;
+	private final BoardFormValidator formValidator;
+	private final HttpServletResponse response;
+	private final MemberUtil memberUtil;
+	
+	private Board board;	// 게시판 설정
 
 	/**
 	 * 게시글 목록
@@ -39,8 +47,12 @@ public class BoardController {
 	 * @return
 	 */
 	@GetMapping("/write/{bId}")
-	public String write(@PathVariable String bId, Model model) {
+	public String write(@PathVariable String bId, @ModelAttribute BoardForm boardForm, Model model) {
 		commonProcess(bId, "write", model);
+		boardForm.setBId(bId);
+		if(memberUtil.isLogin()) {
+			boardForm.setPoster(memberUtil.getMember().getUserNm());
+		}
 
 		return "board/write";
 	}
@@ -60,9 +72,23 @@ public class BoardController {
 	@PostMapping("/save")
 	public String save(@Valid BoardForm boardForm, Errors errors, Model model) {
 		Long id = boardForm.getId();
-		commonProcess(boardForm.getBId(), id == null ? "update" : "write", model);
+		String mode = id == null ? "write" : "update";
+		commonProcess(boardForm.getBId(), mode, model);
 
-		return null;
+		formValidator.validate(boardForm, errors);
+
+		if(errors.hasErrors()) {
+			return "board/" + mode;
+		}
+
+		saveService.save(boardForm);
+		
+		//작성 후 이동 설정 - 목록, 글보기
+		String location = board.getLocationAfterWriting();
+		String url = "redirect:/board/";
+		url += location == "view" ? "view/" + boardForm.getId() : "list";
+
+		return url;
 	}
 
 	/**
@@ -92,7 +118,7 @@ public class BoardController {
 		 */
 
 		// 1번, 2번(권한 체크) 구현
-		Board board = configInfoService.get(bId, action);
+		board = configInfoService.get(bId, action);
 
 		List<String> addCss = new ArrayList<>();
 		List<String> addScript = new ArrayList<>();
@@ -119,7 +145,7 @@ public class BoardController {
 	}
 
 	@ExceptionHandler(CommonException.class)
-	public String errorHandler(CommonException e, Model model, HttpServletResponse response) {
+	public String errorHandler(CommonException e, Model model) {
 		e.printStackTrace();
 
 		String message = e.getMessage();
