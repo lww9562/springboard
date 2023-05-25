@@ -69,10 +69,6 @@ public class BoardSaveTests {
 	@BeforeEach
 	@Transactional
 	void init() {
-		// 사이트 설정 등록
-
-
-
 		// 게시판 설정 추가
 		org.springboard.board.controllers.admins.BoardForm boardForm = new org.springboard.board.controllers.admins.BoardForm();
 		boardForm.setBId("freetalk");

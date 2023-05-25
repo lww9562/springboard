@@ -10,5 +10,6 @@ public class Configs {
 	private String code;
 
 	@Lob
+	@Column(name="value_")
 	private String value;
 }
