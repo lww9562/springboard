@@ -8,6 +8,7 @@ import org.springboard.board.controllers.boards.BoardForm;
 import org.springboard.board.entities.Board;
 import org.springboard.board.entities.BoardData;
 import org.springboard.board.models.board.BoardDataInfoService;
+import org.springboard.board.models.board.BoardDataNotExistException;
 import org.springboard.board.models.board.BoardDataSaveService;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
 import org.springboard.board.models.board.config.BoardConfigSaveService;
@@ -18,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 public class BoardViewTests {
 	private Board board;
 	private Long id;	// 게시글 번호
+
 	@Autowired
 	private BoardDataSaveService saveService;
 	@Autowired
@@ -36,18 +38,21 @@ public class BoardViewTests {
 	@Autowired
 	private BoardDataInfoService infoService;
 
+	private BoardForm boardForm2;
+
 	@BeforeEach
 	void init() {
 		// 게시판 설정 추가
 		org.springboard.board.controllers.admins.BoardForm boardForm = new org.springboard.board.controllers.admins.BoardForm();
 		boardForm.setBId("freetalk");
 		boardForm.setBName("자유게시판");
+		boardForm.setCategory("분류1");
 		configSaveService.save(boardForm);
 
 		board = configInfoService.get(boardForm.getBId(), true);
 
 		// 테스트용 기본 게시글 추가
-		BoardForm boardForm2 = BoardForm.builder()
+		boardForm2 = BoardForm.builder()
 				.bId(board.getBId())
 				.gid(UUID.randomUUID().toString())
 				.poster("작성자")
@@ -65,6 +70,14 @@ public class BoardViewTests {
 	void getBoardDataSuccessTest() {
 		assertDoesNotThrow(() -> {
 			infoService.get(id);
+		});
+	}
+
+	@Test
+	@DisplayName("등록되지 않은 게시글이면 BoardDataNotExistException 발생")
+	void getBoardDataNotExistTest() {
+		assertThrows(BoardDataNotExistException.class, () -> {
+			infoService.get(id + 10);
 		});
 	}
 }
