@@ -85,6 +85,8 @@ public class BoardController {
 	}
 
 	private void commonProcess(Model model, String title) {
+		String menuCode = "board";
+
 		// 서브 메뉴 처리
 		String subMenuCode = Menus.getSubMenuCode(request);
 		subMenuCode = title.equals("게시판 수정") ? "register" : subMenuCode;
@@ -95,5 +97,6 @@ public class BoardController {
 
 		model.addAttribute("pageTitle", title);
 		model.addAttribute("title", title);
+		model.addAttribute("menuCode", menuCode);
 	}
 }
