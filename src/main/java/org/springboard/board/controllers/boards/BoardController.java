@@ -9,6 +9,7 @@ import org.springboard.board.entities.Board;
 import org.springboard.board.entities.BoardData;
 import org.springboard.board.models.board.BoardDataInfoService;
 import org.springboard.board.models.board.BoardDataSaveService;
+import org.springboard.board.models.board.UpdateHitService;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -29,6 +30,7 @@ public class BoardController {
 	private final BoardFormValidator formValidator;
 	private final HttpServletResponse response;
 	private final MemberUtil memberUtil;
+	private final UpdateHitService updateHitService;
 	
 	private Board board;	// 게시판 설정
 
@@ -104,9 +106,13 @@ public class BoardController {
 	public String view(@PathVariable Long id, Model model) {
 		BoardData boardData = infoService.get(id);
 		Board board = boardData.getBoard();
-		model.addAttribute("boardData", boardData);
 
 		commonProcess(board.getBId(), "view", model);
+
+		model.addAttribute("boardData", boardData);
+		model.addAttribute("board", board);
+
+		updateHitService.update(id);	// 게시글 조회수 업데이트
 
 		return "board/view";
 	}
