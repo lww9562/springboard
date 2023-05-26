@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springboard.board.commons.CommonException;
 import org.springboard.board.commons.MemberUtil;
 import org.springboard.board.entities.Board;
+import org.springboard.board.entities.BoardData;
+import org.springboard.board.models.board.BoardDataInfoService;
 import org.springboard.board.models.board.BoardDataSaveService;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardController {
 	private final BoardConfigInfoService configInfoService;
+	private final BoardDataInfoService infoService;
 	private final BoardDataSaveService saveService;
 	private final BoardFormValidator formValidator;
 	private final HttpServletResponse response;
@@ -66,6 +69,7 @@ public class BoardController {
 	public String update(@PathVariable Long id, Model model) {
 		commonProcess(null, "update", model);
 
+
 		return "board/update";
 	}
 
@@ -98,7 +102,11 @@ public class BoardController {
 	 */
 	@GetMapping("/view/{id}")
 	public String view(@PathVariable Long id, Model model) {
-		commonProcess(null, "view", model);
+		BoardData boardData = infoService.get(id);
+		Board board = boardData.getBoard();
+		model.addAttribute("boardData", boardData);
+
+		commonProcess(board.getBId(), "view", model);
 
 		return "board/view";
 	}
