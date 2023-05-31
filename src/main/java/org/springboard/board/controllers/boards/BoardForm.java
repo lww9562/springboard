@@ -24,9 +24,11 @@ public class BoardForm {
 	private String guestPw;		// 비회원 비밀번호
 
 	private String category;	// 게시판 분류
-
+	
 	@NotBlank
 	private String subject;		// 제목
 	@NotBlank
 	private String content;		// 내용
+	
+	private Long userNo;		// 회원번호
 }

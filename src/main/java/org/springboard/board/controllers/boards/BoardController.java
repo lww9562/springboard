@@ -3,6 +3,7 @@ package org.springboard.board.controllers.boards;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springboard.board.commons.CommonException;
 import org.springboard.board.commons.MemberUtil;
 import org.springboard.board.entities.Board;
@@ -74,6 +75,13 @@ public class BoardController {
 
 		commonProcess(board.getBId(), "update", model);
 
+		// 수정 권한 체크
+		
+		BoardForm boardForm = new ModelMapper().map(boardData, BoardForm.class);
+		if(boardData.getMember() != null) {
+			boardForm.setUserNo(boardData.getMember().getUserNo());
+		}
+		model.addAttribute("boardForm", boardForm);
 
 		return "board/update";
 	}
