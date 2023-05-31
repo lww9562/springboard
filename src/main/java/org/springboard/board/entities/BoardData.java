@@ -40,7 +40,7 @@ public class BoardData extends BaseEntity {
 	private String content;		// 내용
 
 	private int hit;			// 조회수
-	@Column(length = 125)
+	@Column(length = 150)
 	private String ua;			// User-Agent : 브라우저 정보
 	@Column(length = 20)
 	private String ip;			// 작성자 IP
