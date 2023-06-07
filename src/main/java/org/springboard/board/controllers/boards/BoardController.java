@@ -1,6 +1,7 @@
 package org.springboard.board.controllers.boards;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -8,10 +9,11 @@ import org.springboard.board.commons.CommonException;
 import org.springboard.board.commons.MemberUtil;
 import org.springboard.board.entities.Board;
 import org.springboard.board.entities.BoardData;
-import org.springboard.board.models.board.BoardDataInfoService;
-import org.springboard.board.models.board.BoardDataSaveService;
-import org.springboard.board.models.board.UpdateHitService;
+import org.springboard.board.entities.Member;
+import org.springboard.board.models.board.*;
 import org.springboard.board.models.board.config.BoardConfigInfoService;
+import org.springboard.board.models.board.config.BoardNotAllowAccessException;
+import org.springboard.board.models.member.MemberInfo;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +34,8 @@ public class BoardController {
 	private final HttpServletResponse response;
 	private final MemberUtil memberUtil;
 	private final UpdateHitService updateHitService;
+	private final GuestPasswordCheckService passwordCheckService;
+	private final HttpSession session;
 	
 	private Board board;	// 게시판 설정
 
@@ -71,15 +75,17 @@ public class BoardController {
 	@GetMapping("/{id}/update")
 	public String update(@PathVariable Long id, Model model) {
 		BoardData boardData = infoService.get(id, "update");
-		Board board = boardData.getBoard();
+		board = boardData.getBoard();
 
 		commonProcess(board.getBId(), "update", model);
 
 		// 수정 권한 체크
-		
+		updateDeletePossibleCheck(boardData);
+
 		BoardForm boardForm = new ModelMapper().map(boardData, BoardForm.class);
-		if(boardData.getMember() != null) {
-			boardForm.setUserNo(boardData.getMember().getUserNo());
+		if(boardData.getMember() == null) {
+			//boardForm.setUserNo(boardData.getMember().getUserNo());
+			board.setGuest(true);
 		}
 		model.addAttribute("boardForm", boardForm);
 
@@ -89,7 +95,20 @@ public class BoardController {
 	@PostMapping("/save")
 	public String save(@Valid BoardForm boardForm, Errors errors, Model model) {
 		Long id = boardForm.getId();
-		String mode = id == null ? "write" : "update";
+		String mode = "write";
+		if(id != null) {
+			mode = "update";
+			BoardData boardData = infoService.get(id);
+			board = boardData.getBoard();
+			if(boardData.getMember() == null) {
+				board.setGuest(true);
+			} else {
+				boardForm.setUserNo(boardData.getMember().getUserNo());
+			}
+
+			updateDeletePossibleCheck(boardData);
+
+		}
 		commonProcess(boardForm.getBId(), mode, model);
 
 		formValidator.validate(boardForm, errors);
@@ -116,7 +135,7 @@ public class BoardController {
 	@GetMapping("/view/{id}")
 	public String view(@PathVariable Long id, Model model) {
 		BoardData boardData = infoService.get(id);
-		Board board = boardData.getBoard();
+		board = boardData.getBoard();
 
 		commonProcess(board.getBId(), "view", model);
 
@@ -126,6 +145,27 @@ public class BoardController {
 		updateHitService.update(id);	// 게시글 조회수 업데이트
 
 		return "board/view";
+	}
+
+	@PostMapping("/password")
+	public String password(String password) {
+		String mode = (String)session.getAttribute("guestPwMode");
+		Long id = (Long)session.getAttribute("guestPwId");
+
+		// 비회원 비밀번호 검증
+		passwordCheckService.check(id, password, mode);
+
+		// 비회원 비밀번호 검증 완료 후 세션 처리
+		session.setAttribute(mode + "_" + id, true);
+
+		// 비회원 비밀번호 확인 후 이동 경로
+		String url = mode == "comment" ? "/board/" + id + "/comment" : "/board/" + id + "/update";
+
+		// 검증 완료 후 세션 비우기
+		session.removeAttribute("guestPwMode");
+		session.removeAttribute("guestPwId");
+		
+		return "redirect:" + url;
 	}
 
 
@@ -169,6 +209,49 @@ public class BoardController {
 
 	}
 
+	/**
+	 * 수정, 삭제 권한 체크
+	 * 	- 회원 : 작성한 회원
+	 * 	- 비회원 : 비밀번호 검증
+	 * 	- 관리자 : 검증 없이 가능
+ 	 * @param boardData
+	 */
+	public void updateDeletePossibleCheck(BoardData boardData) {
+		if (memberUtil.isAdmin()) {
+			return;    // 관리자는 무조건 가능
+		}
+
+		Member member = boardData.getMember();
+
+		if (member == null) {
+			// 비회원일 경우에는 비밀번호 검증이 되었는지 체크, 안되어있다면 비밀번호 확인 페이지
+			/*
+			 * 세션 키 - "board_게시글 번호" 가 있으면 비회원 검증 완료
+			 */
+			if (session.getAttribute("board_" + boardData.getId()) == null) {
+				// 1. 위치 - 게시글 : board, 댓글 comment
+				// 2. 게시글 번호
+
+				session.setAttribute("guestPwMode", "board");
+				session.setAttribute("guestPwId", boardData.getId());
+
+				throw new GuestPasswordNotCheckedException();    //비밀번호 확인 페이지 노출
+			}
+		}
+		else {
+			if (memberUtil.isLogin()
+					&& memberUtil.getMember().getUserNo() != boardData.getMember().getUserNo()) {
+				throw new BoardNotAllowAccessException();
+				// 글을 작성한 회원쪽만 가능하도록 통제
+			}
+		}
+	}
+
+	public void updateDeletePossibleCheck(Long id) {
+		BoardData boardData = infoService.get(id, "update");
+		updateDeletePossibleCheck(boardData);
+	}
+
 	@ExceptionHandler(CommonException.class)
 	public String errorHandler(CommonException e, Model model) {
 		e.printStackTrace();
@@ -176,6 +259,10 @@ public class BoardController {
 		String message = e.getMessage();
 		HttpStatus status = e.getStatus();
 		response.setStatus(status.value());
+
+		if(e instanceof GuestPasswordNotCheckedException) {	// 회원 비밀번호 검증 관련 예외인 경우
+			return "board/password";
+		}
 
 		String script = String.format("alert('%s'); history.back();", message);
 		model.addAttribute("script", script);
