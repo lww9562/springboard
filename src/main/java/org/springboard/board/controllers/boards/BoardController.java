@@ -35,6 +35,7 @@ public class BoardController {
 	private final MemberUtil memberUtil;
 	private final UpdateHitService updateHitService;
 	private final GuestPasswordCheckService passwordCheckService;
+	private final BoardDataDeleteService deleteService;
 	private final HttpSession session;
 	
 	private Board board;	// 게시판 설정
@@ -147,6 +148,24 @@ public class BoardController {
 		return "board/view";
 	}
 
+	@GetMapping("/delete/{id}")
+	public String delete(@PathVariable Long id, Model model){
+		BoardData boardData = infoService.get(id, "update");
+		board = boardData.getBoard();
+		String bId = board.getBId();
+
+		commonProcess(bId, "update", model);
+
+		// 삭제 권한 체크
+		updateDeletePossibleCheck(boardData, "board_delete");
+
+		// 삭제 처리
+		deleteService.delete(id);
+
+		// 삭제 완료 시 게시글 목록으로 이동
+		return "redirect:/board/list/" + bId;
+	}
+
 	@PostMapping("/password")
 	public String password(String password) {
 		String mode = (String)session.getAttribute("guestPwMode");
@@ -159,7 +178,16 @@ public class BoardController {
 		session.setAttribute(mode + "_" + id, true);
 
 		// 비회원 비밀번호 확인 후 이동 경로
+		/**
 		String url = mode == "comment" ? "/board/" + id + "/comment" : "/board/" + id + "/update";
+		 */
+		String url = "/board/" + id + "/update";
+		if(mode.equals("comment")) {	// 댓글 삭제
+			url = "/board/" + id + "/comment";
+		} else if (mode.equals("board_delete")) {	// 게시글 삭제
+			url = "/board/delete/" + id;
+		}
+
 
 		// 검증 완료 후 세션 비우기
 		session.removeAttribute("guestPwMode");
@@ -216,7 +244,8 @@ public class BoardController {
 	 * 	- 관리자 : 검증 없이 가능
  	 * @param boardData
 	 */
-	public void updateDeletePossibleCheck(BoardData boardData) {
+	public void updateDeletePossibleCheck(BoardData boardData, String mode) {
+		mode = mode == null ? "board" : mode;
 		if (memberUtil.isAdmin()) {
 			return;    // 관리자는 무조건 가능
 		}
@@ -228,11 +257,11 @@ public class BoardController {
 			/*
 			 * 세션 키 - "board_게시글 번호" 가 있으면 비회원 검증 완료
 			 */
-			if (session.getAttribute("board_" + boardData.getId()) == null) {
-				// 1. 위치 - 게시글 : board, 댓글 comment
+			if (session.getAttribute(mode + "_" + boardData.getId()) == null) {
+				// 1. 위치 - 게시글 : board, 삭제 : board_delete, 댓글 : comment
 				// 2. 게시글 번호
 
-				session.setAttribute("guestPwMode", "board");
+				session.setAttribute("guestPwMode", mode);
 				session.setAttribute("guestPwId", boardData.getId());
 
 				throw new GuestPasswordNotCheckedException();    //비밀번호 확인 페이지 노출
@@ -249,7 +278,11 @@ public class BoardController {
 
 	public void updateDeletePossibleCheck(Long id) {
 		BoardData boardData = infoService.get(id, "update");
-		updateDeletePossibleCheck(boardData);
+		updateDeletePossibleCheck(boardData, null);
+	}
+
+	public void updateDeletePossibleCheck(BoardData boardData) {
+		updateDeletePossibleCheck(boardData, null);
 	}
 
 	@ExceptionHandler(CommonException.class)

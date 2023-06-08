@@ -23,7 +23,7 @@ public class GuestPasswordCheckService {
 		}
 		mode = mode == null || mode.isBlank() ? "board" : mode;
 
-		if(mode.equals("board")) {
+		if(mode.equals("board") || mode.equals("board_delete")) {	// 일반 게시글 수정 및 삭제
 			//게시글 비밀번호 확인
 			BoardData boardData = infoService.get(id, "update");
 			String guestPw = boardData.getGuestPw();
