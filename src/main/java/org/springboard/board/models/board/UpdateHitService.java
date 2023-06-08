@@ -46,8 +46,8 @@ public class UpdateHitService {
 	private int getUid() {
 		String ip = request.getRemoteAddr();
 		String ua = request.getHeader("User-Agent");
-		Long userNo = memberUtil.isLogin() ? memberUtil.getMember().getUserNo() : 0L;
+		//Long userNo = memberUtil.isLogin() ? memberUtil.getMember().getUserNo() : 0L;
 
-		return Objects.hash(ip, ua, userNo);
+		return memberUtil.isLogin() ? memberUtil.getMember().getUserNo().intValue() : Objects.hash(ip, ua);
 	}
 }

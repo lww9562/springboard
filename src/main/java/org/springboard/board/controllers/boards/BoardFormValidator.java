@@ -19,8 +19,13 @@ public class BoardFormValidator implements Validator {
 	@Override
 	public void validate(Object target, Errors errors) {
 		BoardForm boardForm = (BoardForm)target;
-		// 비회원 비밀번호 체크
-		if(!memberUtil.isLogin()) {
+		// 비회원 비밀번호 체크 S
+		Long id = boardForm.getId();
+		Long userNo = boardForm.getUserNo();
+		
+				
+		if((id == null && !memberUtil.isLogin())		// 글 작성 시 비회원인 경우 
+				|| (id != null && userNo == null) ) {	// 글 수정 시 비회원인 경우
 			String guestPw = boardForm.getGuestPw();
 			if(guestPw == null || guestPw.isBlank()) {
 				errors.rejectValue("guestPw", "NotBlank");
@@ -30,5 +35,6 @@ public class BoardFormValidator implements Validator {
 				errors.rejectValue("guestPw", "Size");
 			}
 		}
+		// 비회원 비밀번호 체크 E
 	}
 }
